@@ -613,15 +613,20 @@
 <script>
 
 // ╔════════════════════════════════════════════════════════════════════╗
-// ║          ALCON OPS — SUPABASE CLOUD (Multi-usuario)               ║
-// ║  Datos sincronizados en la nube. Múltiples usuarios simultáneos.  ║
+// ║     ALCON OPS — SUPABASE CLOUD + IndexedDB local (caché)         ║
 // ╚════════════════════════════════════════════════════════════════════╝
 
-// ════ CONFIGURACIÓN SUPABASE — Reemplazar con tus valores ════
+// ════ SUPABASE — tus credenciales ════
 const SUPABASE_URL  = 'https://rsdezioxghvgkbokxxwv.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzZGV6aW94Z2h2Z2tib2t4eHd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NzE3MjMsImV4cCI6MjA4ODI0NzcyM30.WfjkaG8FTIa8V8d-WrU4lC_IvI9nrNSqVOgtklfg0r8';
-const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-// ════════════════════════════════════════════════════════════
+let _sbClient = null;
+function sbClient(){
+  if(!_sbClient && window.supabase){
+    _sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  }
+  return _sbClient;
+}
+// ════════════════════════════════════
 
 const ALCON_DB_NAME = 'AlconOpsDB_v2';
 const ALCON_DB_VERSION = 3;
@@ -1295,37 +1300,35 @@ function updateExcelStatus(){
   let currentUser = null;
 
   const roles = {
-    admin:          { name: 'Admin',         tabs: ['dashboard','equipos','comercial','logistica','proveedores','inventario','alertas','configuracion'] },
-    comercial:      { name: 'Comercial',     tabs: ['dashboard','comercial','logistica'] },
-    logistica:      { name: 'Logística',     tabs: ['dashboard','equipos','comercial','logistica','proveedores','inventario'] },
-    mantenimiento:  { name: 'Mantenimiento', tabs: ['dashboard','equipos','logistica','inventario','alertas'] },
-    cartera:        { name: 'Cartera',       tabs: [] }
+    admin:         { name: 'Admin',         tabs: ['dashboard','equipos','comercial','logistica','proveedores','inventario','alertas','configuracion'] },
+    comercial:     { name: 'Comercial',     tabs: ['dashboard','comercial','logistica'] },
+    logistica:     { name: 'Logística',     tabs: ['dashboard','equipos','comercial','logistica','proveedores','inventario'] },
+    mantenimiento: { name: 'Mantenimiento', tabs: ['dashboard','equipos','logistica','inventario','alertas'] },
+    cartera:       { name: 'Cartera',       tabs: [] }
   };
 
-  // ── Helpers: username ↔ email interno ───────────────────────────────
+  // Convierte username → email interno para Supabase Auth
   function usernameToEmail(u){ return u.trim().toLowerCase().replace(/\s+/g,'.') + '@alconops.internal'; }
 
-  function initAuth(){
-    // sesión la maneja Supabase; no hay nada que inicializar en localStorage
-  }
+  function initAuth(){ /* Supabase maneja la sesión */ }
 
   async function getUsers(){
-    const { data, error } = await sbClient.from('profiles').select('*').order('nombre');
-    if(error){ console.error('getUsers error:', error); return []; }
-    return (data || []).map(p => ({
-      username: p.username, nombre: p.nombre,
-      role: p.role, sede: p.sede, user_id: p.user_id
-    }));
+    const sb = sbClient();
+    if(!sb) return [];
+    const { data, error } = await sb.from('profiles').select('*').order('nombre');
+    if(error){ console.error('getUsers:', error); return []; }
+    return data || [];
   }
 
-  async function saveUsers(){ /* No-op: Supabase es la fuente de verdad */ }
+  function saveUsers(){ /* No-op: Supabase es la fuente de verdad */ }
 
   async function login(username, password){
+    const sb = sbClient();
+    if(!sb){ mostrarToast('❌ Sin conexión a Supabase','error'); return false; }
     const email = usernameToEmail(username);
-    const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if(error || !data?.user) return false;
-    const { data: profile, error: pe } = await sbClient
-      .from('profiles').select('*').eq('user_id', data.user.id).single();
+    const { data: profile, error: pe } = await sb.from('profiles').select('*').eq('user_id', data.user.id).single();
     if(pe || !profile) return false;
     currentUser = { username: profile.username, nombre: profile.nombre, role: profile.role, sede: profile.sede };
     return true;
@@ -1333,16 +1336,18 @@ function updateExcelStatus(){
 
   async function logout(){
     currentUser = null;
-    await sbClient.auth.signOut();
+    const sb = sbClient();
+    if(sb) await sb.auth.signOut();
     showLogin();
   }
 
   async function checkSession(){
-    const { data:{ session } } = await sbClient.auth.getSession();
+    const sb = sbClient();
+    if(!sb){ showLogin(); return; }
+    const { data:{ session } } = await sb.auth.getSession();
     if(!session){ showLogin(); return; }
-    const { data: profile } = await sbClient
-      .from('profiles').select('*').eq('user_id', session.user.id).single();
-    if(!profile){ await sbClient.auth.signOut(); showLogin(); return; }
+    const { data: profile } = await sb.from('profiles').select('*').eq('user_id', session.user.id).single();
+    if(!profile){ await sb.auth.signOut(); showLogin(); return; }
     currentUser = { username: profile.username, nombre: profile.nombre, role: profile.role, sede: profile.sede };
     showApp();
   }
@@ -1431,12 +1436,13 @@ function updateExcelStatus(){
     if(document.readyState === 'loading'){
       document.addEventListener('DOMContentLoaded', function(){
         setupAuthHandlers();
-        // checkSession es async con Supabase
-        setTimeout(() => checkSession(), 100);
+        // Solo checkSession después de que todo esté listo
+        setTimeout(checkSession, 800);
       });
     } else {
       setupAuthHandlers();
-      setTimeout(() => checkSession(), 100);
+      // Solo checkSession después de que todo esté listo
+      setTimeout(checkSession, 800);
     }
   })();
 
@@ -1451,19 +1457,15 @@ function updateExcelStatus(){
         e.preventDefault();
         const lu = document.getElementById('loginUser');
         const lp = document.getElementById('loginPass');
+        const btn = loginForm.querySelector('button');
         const username = lu ? lu.value.trim() : '';
         const password = lp ? lp.value : '';
-        const btnSubmit = loginForm.querySelector('button[type="submit"]') || loginForm.querySelector('button');
         const err = document.getElementById('loginError');
-
-        if(btnSubmit){ btnSubmit.disabled = true; btnSubmit.textContent = 'Ingresando...'; }
         if(err) err.style.display = 'none';
-
+        if(btn){ btn.disabled = true; btn.textContent = 'Ingresando...'; }
         const ok = await login(username, password);
-        if(btnSubmit){ btnSubmit.disabled = false; btnSubmit.textContent = 'Ingresar'; }
-
+        if(btn){ btn.disabled = false; btn.textContent = 'Ingresar'; }
         if(ok){
-          // Si es usuario de cartera, redirigir al módulo de cartera
           if(currentUser.role === 'cartera'){
             window.location.href = 'Alcon_Cartera.html';
             return;
@@ -2179,10 +2181,17 @@ function updateExcelStatus(){
       const ce = document.getElementById('cancelEdit');
       
       if(sp) sp.onclick = async function(){
-        if(error){ mostrarToast('❌ Error: ' + error.message, 'error'); return; }
+        const en = document.getElementById('editNombre');
+        const nombre = en ? en.value.trim() : '';
+        if(!nombre){
+          mostrarToast('⚠️ El nombre no puede estar vacío','warning');
+          return;
+        }
+        const sb = sbClient();
+        if(sb){ const {error} = await sb.from('profiles').update({nombre}).eq('username', currentUser.username); if(error){ mostrarToast('❌ '+error.message,'error'); return; } }
         currentUser.nombre = nombre;
         updateUserUI();
-        mostrarToast('✅ Perfil actualizado', 'success');
+        mostrarToast('✅ Perfil actualizado','success');
         closeModal();
       };
 
@@ -2235,20 +2244,13 @@ function updateExcelStatus(){
           return;
         }
 
-        // Verificar contraseña actual via re-login
+        const sb = sbClient();
+        if(!sb){ mostrarToast('❌ Sin conexión','error'); return; }
         const email = usernameToEmail(currentUser.username);
-        const { error: verifyError } = await sbClient.auth.signInWithPassword({ email, password: oldPass });
-        if(verifyError){
-          mostrarToast('⚠️ Contraseña actual incorrecta','error');
-          return;
-        }
-
-        // Actualizar contraseña en Supabase
-        const { error: updateError } = await sbClient.auth.updateUser({ password: newPass });
-        if(updateError){
-          mostrarToast('❌ Error: ' + updateError.message,'error');
-          return;
-        }
+        const { error: verifyError } = await sb.auth.signInWithPassword({ email, password: oldPass });
+        if(verifyError){ mostrarToast('⚠️ Contraseña actual incorrecta','error'); return; }
+        const { error: updateError } = await sb.auth.updateUser({ password: newPass });
+        if(updateError){ mostrarToast('❌ '+updateError.message,'error'); return; }
         mostrarToast('✅ Contraseña actualizada','success');
         closeModal();
       };
@@ -2312,9 +2314,9 @@ function updateExcelStatus(){
         btn.onclick = async function(){
           const username = this.getAttribute('data-user');
           if(confirm(`¿Eliminar usuario "${username}"?`)){
-            const { error } = await sbClient.from('profiles').delete().eq('username', username);
-            if(error){ mostrarToast('❌ Error al eliminar: ' + error.message, 'error'); return; }
-            mostrarToast('✅ Usuario eliminado', 'success');
+            const sb = sbClient();
+            if(sb){ const { error } = await sb.from('profiles').delete().eq('username', username); if(error){ mostrarToast('❌ '+error.message,'error'); return; } }
+            mostrarToast('✅ Usuario eliminado','success');
             openManageUsers();
           }
         };
@@ -2353,8 +2355,8 @@ function updateExcelStatus(){
             const c = document.getElementById('cancelEditSede');
             if(s) s.onclick = async function(){
               const ns = document.getElementById('editSede').value;
-              const { error } = await sbClient.from('profiles').update({ sede: ns }).eq('username', username);
-              if(error){ mostrarToast('❌ Error: ' + error.message, 'error'); return; }
+              const sb = sbClient();
+              if(sb){ const {error} = await sb.from('profiles').update({sede:ns}).eq('username',username); if(error){ mostrarToast('❌ '+error.message,'error'); return; } }
               mostrarToast('✅ Sede actualizada','success');
               openManageUsers();
             };
@@ -2412,7 +2414,7 @@ function updateExcelStatus(){
       const snu = document.getElementById('saveNewUser');
       const cnu = document.getElementById('cancelNewUser');
       
-      if(snu) snu.onclick = function(){
+      if(snu) snu.onclick = async function(){
         const nu = document.getElementById('newUsername');
         const nn = document.getElementById('newNombre');
         const np = document.getElementById('newPassword');
@@ -2435,36 +2437,20 @@ function updateExcelStatus(){
         }
 
         snu.disabled = true; snu.textContent = 'Creando...';
-
-        // Verificar que no exista
-        const usersExist = await getUsers();
-        if(usersExist.find(u => u.username.toLowerCase() === username.toLowerCase())){
+        const users = await getUsers();
+        if(users.find(u => u.username.toLowerCase() === username.toLowerCase())){
           mostrarToast('⚠️ Este usuario ya existe','warning');
           snu.disabled = false; snu.textContent = 'Crear usuario';
           return;
         }
-
-        // Crear en Supabase Auth
+        const sb = sbClient();
+        if(!sb){ mostrarToast('❌ Sin conexión Supabase','error'); snu.disabled=false; snu.textContent='Crear usuario'; return; }
         const email = usernameToEmail(username);
-        const { data: signupData, error: signupError } = await sbClient.auth.signUp({ email, password });
-        if(signupError){
-          mostrarToast('❌ Error al crear cuenta: ' + signupError.message, 'error');
-          snu.disabled = false; snu.textContent = 'Crear usuario';
-          return;
-        }
-
-        // Insertar perfil
-        const { error: profileError } = await sbClient.from('profiles').insert({
-          user_id: signupData.user.id,
-          username, nombre: nombre || username, role, sede
-        });
-        if(profileError){
-          mostrarToast('❌ Error al guardar perfil: ' + profileError.message, 'error');
-          snu.disabled = false; snu.textContent = 'Crear usuario';
-          return;
-        }
-
-        mostrarToast('✅ Usuario "' + username + '" creado exitosamente', 'success');
+        const { data: signupData, error: signupError } = await sb.auth.signUp({ email, password });
+        if(signupError){ mostrarToast('❌ '+signupError.message,'error'); snu.disabled=false; snu.textContent='Crear usuario'; return; }
+        const { error: profileError } = await sb.from('profiles').insert({ user_id: signupData.user.id, username, nombre: nombre||username, role, sede });
+        if(profileError){ mostrarToast('❌ '+profileError.message,'error'); snu.disabled=false; snu.textContent='Crear usuario'; return; }
+        mostrarToast('✅ Usuario "'+username+'" creado','success');
         openManageUsers();
       };
 
@@ -2475,67 +2461,54 @@ function updateExcelStatus(){
   }
 
 
-  // ========= PERSISTENCIA SUPABASE (Cloud) + IndexedDB (caché local) =========
+  // ========= PERSISTENCIA SUPABASE + IndexedDB caché =========
   const SUPABASE_DATA_KEY = 'alcon_data_v1';
 
-  async function cargarDatosLocales(){
-    // 1. Intentar cargar desde Supabase (fuente de verdad)
-    try {
-      const { data: row, error } = await sbClient
-        .from('app_data')
-        .select('data')
-        .eq('key', SUPABASE_DATA_KEY)
-        .single();
-
-      if(!error && row?.data){
-        _aplicarDatos(row.data);
-        // Guardar copia en IndexedDB como caché offline
-        await dbGuardar('appData', row.data);
-        console.log('✅ Datos cargados desde Supabase');
-        return true;
-      }
-    } catch(e){ console.warn('Supabase load failed, trying IndexedDB cache:', e.message); }
-
-    // 2. Fallback: IndexedDB caché local
-    try {
-      const cached = await dbCargar('appData');
-      if(cached){ _aplicarDatos(cached); console.log('⚠️ Datos cargados desde caché local'); return true; }
-    } catch(e){ console.warn('IndexedDB cache miss:', e); }
-
-    console.log('ℹ️ Sin datos previos — iniciando con datos por defecto');
-    return false;
-  }
-
   function _aplicarDatos(data){
-    if(data.equipos && Array.isArray(data.equipos)){ equipos.length=0; equipos.push(...data.equipos); }
-    if(data.alquileres && Array.isArray(data.alquileres)){ alquileres.length=0; alquileres.push(...data.alquileres); }
-    if(data.cotizaciones && Array.isArray(data.cotizaciones)){ cotizaciones.length=0; cotizaciones.push(...data.cotizaciones); }
-    if(data.clientes && Array.isArray(data.clientes)){
-      const savedIds = new Set(data.clientes.map(c=>c.id));
-      const nuevosDefault = clientes.filter(c=>!savedIds.has(c.id));
-      clientes.length=0; clientes.push(...data.clientes,...nuevosDefault);
+    if(data.equipos?.length){ equipos.length=0; equipos.push(...data.equipos); }
+    if(data.alquileres?.length){ alquileres.length=0; alquileres.push(...data.alquileres); }
+    if(data.cotizaciones?.length){ cotizaciones.length=0; cotizaciones.push(...data.cotizaciones); }
+    if(data.clientes?.length){
+      const savedIds=new Set(data.clientes.map(c=>c.id));
+      const nuevos=clientes.filter(c=>!savedIds.has(c.id));
+      clientes.length=0; clientes.push(...data.clientes,...nuevos);
     }
-    if(data.comprasServicios && Array.isArray(data.comprasServicios)){ comprasServicios.length=0; comprasServicios.push(...data.comprasServicios); }
-    if(data.cuentasPorPagar && Array.isArray(data.cuentasPorPagar)){ cuentasPorPagar.length=0; cuentasPorPagar.push(...data.cuentasPorPagar); }
-    if(data.repuestos && Array.isArray(data.repuestos)){ repuestos.length=0; repuestos.push(...data.repuestos); }
-    if(data.movimientosInventario && Array.isArray(data.movimientosInventario)){ movimientosInventario.length=0; movimientosInventario.push(...data.movimientosInventario); }
-    if(data.facturas && Array.isArray(data.facturas)){ facturas.length=0; facturas.push(...data.facturas); }
-    if(data.pagos && Array.isArray(data.pagos)){ pagos.length=0; pagos.push(...data.pagos); }
-    if(data.alertas && Array.isArray(data.alertas)){ alertas.length=0; alertas.push(...data.alertas); }
-    if(data.tarifas && Array.isArray(data.tarifas)){ tarifas.length=0; tarifas.push(...data.tarifas); }
+    if(data.comprasServicios?.length){ comprasServicios.length=0; comprasServicios.push(...data.comprasServicios); }
+    if(data.cuentasPorPagar?.length){ cuentasPorPagar.length=0; cuentasPorPagar.push(...data.cuentasPorPagar); }
+    if(data.repuestos?.length){ repuestos.length=0; repuestos.push(...data.repuestos); }
+    if(data.movimientosInventario?.length){ movimientosInventario.length=0; movimientosInventario.push(...data.movimientosInventario); }
+    if(data.facturas?.length){ facturas.length=0; facturas.push(...data.facturas); }
+    if(data.pagos?.length){ pagos.length=0; pagos.push(...data.pagos); }
+    if(data.alertas?.length){ alertas.length=0; alertas.push(...data.alertas); }
+    if(data.tarifas?.length){ tarifas.length=0; tarifas.push(...data.tarifas); }
     if(data.adicionales && typeof data.adicionales==='object'){
       if(data.adicionales.operador) adicionales.operador=data.adicionales.operador;
       if(data.adicionales.viaticos) adicionales.viaticos=data.adicionales.viaticos;
     }
-    if(data.metasIngresos && typeof data.metasIngresos==='object') Object.assign(metasIngresos, data.metasIngresos);
-    if(data.proveedoresLogisticos && Array.isArray(data.proveedoresLogisticos)){ proveedoresLogisticos.length=0; proveedoresLogisticos.push(...data.proveedoresLogisticos); }
-    if(data.operariosTaller && Array.isArray(data.operariosTaller)){ operariosTaller.length=0; operariosTaller.push(...data.operariosTaller); }
-    if(data.alquilerEquipos && Array.isArray(data.alquilerEquipos)){ alquilerEquipos.length=0; alquilerEquipos.push(...data.alquilerEquipos); }
-    if(data.logEventos && Array.isArray(data.logEventos)){ logEventos.length=0; logEventos.push(...data.logEventos); }
-    if(data.ordenesLogistica && Array.isArray(data.ordenesLogistica)){ ordenesLogistica.length=0; ordenesLogistica.push(...data.ordenesLogistica); }
+    if(data.metasIngresos && typeof data.metasIngresos==='object') Object.assign(metasIngresos,data.metasIngresos);
+    if(data.proveedoresLogisticos?.length){ proveedoresLogisticos.length=0; proveedoresLogisticos.push(...data.proveedoresLogisticos); }
+    if(data.operariosTaller?.length){ operariosTaller.length=0; operariosTaller.push(...data.operariosTaller); }
+    if(data.alquilerEquipos?.length){ alquilerEquipos.length=0; alquilerEquipos.push(...data.alquilerEquipos); }
+    if(data.logEventos?.length){ logEventos.length=0; logEventos.push(...data.logEventos); }
+    if(data.ordenesLogistica?.length){ ordenesLogistica.length=0; ordenesLogistica.push(...data.ordenesLogistica); }
   }
 
-  async function guardarDatosLocales(){
+  async function cargarDatosLocales(){
+    try {
+      const sb = sbClient();
+      if(sb){
+        const { data: row, error } = await sb.from('app_data').select('data').eq('key', SUPABASE_DATA_KEY).single();
+        if(!error && row?.data){ _aplicarDatos(row.data); await dbGuardar('appData', row.data); console.log('✅ Datos desde Supabase'); return true; }
+      }
+    } catch(e){ console.warn('Supabase load failed:', e.message); }
+    try {
+      const cached = await dbCargar('appData');
+      if(cached){ _aplicarDatos(cached); console.log('⚠️ Datos desde caché local'); return true; }
+    } catch(e){}
+    return false;
+  }
+
+    async function guardarDatosLocales(){
     try {
       const data = {
         equipos, alquileres, cotizaciones, clientes,
@@ -2546,29 +2519,20 @@ function updateExcelStatus(){
         alquilerEquipos, logEventos,
         ultimaActualizacion: new Date().toISOString()
       };
-
       // Guardar en Supabase (cloud)
-      const { error } = await sbClient.from('app_data').upsert({
-        key: SUPABASE_DATA_KEY,
-        data,
-        updated_at: new Date().toISOString()
-      });
-      if(error) throw error;
-
-      // Actualizar caché IndexedDB local
+      const sb = sbClient();
+      if(sb){
+        const { error } = await sb.from('app_data').upsert({ key: SUPABASE_DATA_KEY, data, updated_at: new Date().toISOString() });
+        if(error) console.warn('Supabase save error:', error.message);
+      }
+      // Siempre guardar en IndexedDB como caché
       await dbGuardar('appData', data);
-
       if(excelFileHandle && typeof XLSX !== 'undefined') autoGuardarExcel();
-      mostrarToast('☁️ Guardado en la nube');
+      mostrarToast('☁️ Guardado');
       return true;
     } catch(error){
-      console.error('❌ Error guardando en Supabase:', error);
-      // Intentar guardar al menos en IndexedDB
-      try {
-        const data = { equipos, alquileres, cotizaciones, clientes, comprasServicios, cuentasPorPagar, repuestos, movimientosInventario, facturas, pagos, alertas, tarifas, adicionales, metasIngresos, proveedoresLogisticos, operariosTaller, ordenesLogistica, alquilerEquipos, logEventos };
-        await dbGuardar('appData', data);
-        mostrarToast('⚠️ Guardado local (sin conexión a nube)', 'warning');
-      } catch(e2){ mostrarToast('❌ Error al guardar: ' + error.message, 'error'); }
+      console.error('❌ Error al guardar:', error);
+      mostrarToast('⚠️ Error al guardar: ' + error.message, 'warning');
       return false;
     }
   }
