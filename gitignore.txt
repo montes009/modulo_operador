@@ -1,0 +1,9 @@
+# build & deps
+node_modules/
+dist/
+.astro/
+
+# env / logs
+.env
+.env.*
+npm-debug.log*
