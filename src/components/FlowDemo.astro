@@ -181,7 +181,18 @@ const dic = {
     const s = steps[i];
     stepBtns.forEach((b,k)=>{ b.classList.toggle('active', k===i); b.setAttribute('aria-selected', k===i); });
     const active = stepBtns[i];
-    if(active) active.scrollIntoView({block:'nearest', behavior:'smooth'});
+    // Desplaza SOLO la lista de pasos (vertical en desktop, horizontal en móvil).
+    // Nunca scrollIntoView: arrastraba el scroll de toda la página durante el autoplay.
+    if(active){
+      const aside = root.querySelector('.demo-steps');
+      if(aside){
+        const ar = aside.getBoundingClientRect(), br = active.getBoundingClientRect();
+        if(br.top < ar.top)         aside.scrollTop  -= (ar.top - br.top) + 8;
+        else if(br.bottom > ar.bottom) aside.scrollTop  += (br.bottom - ar.bottom) + 8;
+        if(br.left < ar.left)        aside.scrollLeft -= (ar.left - br.left) + 8;
+        else if(br.right > ar.right)  aside.scrollLeft += (br.right - ar.right) + 8;
+      }
+    }
 
     // pill + card glow
     const [c,bg] = toneColor[s.tone];
