@@ -50,6 +50,15 @@ npm run preview   # sirve dist/ por HTTP (NO abrir dist/index.html con file://, 
    `[data-astro-cid-...]`. Los elementos que `FlowDemo.astro` inyecta por JS (innerHTML)
    **no** reciben ese atributo, así que las reglas scopeadas no los alcanzan. Para esos
    íconos el tamaño va **inline** (`width`/`height` en la etiqueta `<svg>`), no por clase.
+3. **`html{scroll-behavior:smooth}`** (en `global.css`) hace que CUALQUIER scroll
+   programático de la ventana se anime suavemente. Importa al testear: un `window.scrollTo`
+   se ve como un "salto" gradual de cientos de px aunque la página no tenga bug. Para
+   aislar comportamiento real, en pruebas poner `scrollBehavior='auto'` y dejar asentar.
+4. **La demo NO debe mover el scroll de la página.** `FlowDemo.astro` se autoreproduce y
+   avanza de paso cada ~4.2s. NO usar `element.scrollIntoView()` para resaltar el paso
+   activo: arrastra la ventana entera hacia la demo mientras el usuario lee. En su lugar
+   se desplaza solo el contenedor `.demo-steps` ajustando su `scrollTop`/`scrollLeft`
+   (vertical en desktop, horizontal en móvil). Mantener ese patrón.
 
 ## Sistema de íconos (plata / "pro", NO emojis)
 
