@@ -15,6 +15,21 @@ const ic = {
   crown:     '<path d="M3 8l4.5 4.5L12 5l4.5 7.5L21 8l-1.6 10.5H4.6L3 8Z"/><path d="M4.6 18.5h14.8"/>',
   building:  '<path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 10h4a1 1 0 0 1 1 1v10M3 21h18M8 8h3M8 12h3M8 16h3"/>',
   briefcase: '<path d="M4 8h16a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1Z"/><path d="M9 8V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>',
+  users:     '<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 5.2a3.2 3.2 0 0 1 0 5.6M16.5 13.6A5.5 5.5 0 0 1 20.5 19"/>',
+  store:     '<path d="M4 9l1.2-4.2A1 1 0 0 1 6.2 4h11.6a1 1 0 0 1 1 .8L20 9M4 9a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0M5 11v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8M9 20v-5h6v5"/>',
+  shield:    '<path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/><path d="M9.3 12l1.8 1.8L15 10"/>',
+  link:      '<path d="M10 13.5a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1.5 1.5M14 10.5a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1.5-1.5"/>',
+  cloud:     '<path d="M7 18a4.5 4.5 0 0 1-.5-9 6 6 0 0 1 11.5 1.7A3.8 3.8 0 0 1 17.5 18H7Z"/>',
+  phone:     '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M10.5 18.5h3"/>',
+  bell:      '<path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6Z"/><path d="M10 19a2 2 0 0 0 4 0"/>',
+  receipt:   '<path d="M6 3h12v18l-2.2-1.4L13.6 21 12 19.6 10.4 21 8.2 19.6 6 21V3Z"/><path d="M9 8h6M9 12h6"/>',
+  cursor:    '<path d="M5.5 3.5l13.5 6.8-5.6 1.4-1.4 5.6L5.5 3.5Z"/>',
+  theme:     '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16Z" fill="url(#silver)"/>',
+  bolt:      '<path d="M13 2.5L5.5 13H11l-1 8.5L18.5 11H13l1-8.5Z"/>',
+  layers:    '<path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 13l9 5 9-5"/>',
+  elevator:  '<path d="M12 4v16M7 9l5-5 5 5M7 15l5 5 5-5"/>',
+  battery:   '<rect x="3" y="8" width="15" height="8" rx="2"/><path d="M21 11v2M7 11v2M10.5 11v2"/>',
+  boxes:     '<path d="M3 8l9-4 9 4-9 4-9-4Z"/><path d="M3 8v8l9 4 9-4V8M12 12v8"/>',
 };
 
 const features = [
@@ -155,7 +170,7 @@ const solves = [
   <div class="wrap trust-in">
     <p>Diseñado con empresas reales de alquiler de maquinaria</p>
     <div class="trust-row">
-      <span>🚜 Plataformas</span><span>🏗️ Elevadores</span><span>⚡ Equipos eléctricos</span><span>🔋 Baterías</span><span>📦 Multi-sede</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.layers}></svg>Plataformas</span><span><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.elevator}></svg>Elevadores</span><span><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.bolt}></svg>Equipos eléctricos</span><span><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.battery}></svg>Baterías</span><span><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.boxes}></svg>Multi-sede</span>
     </div>
   </div>
 </section>
@@ -222,10 +237,10 @@ const solves = [
       <h2 class="h-sec" data-reveal data-reveal-delay="1">Toda tu operación,<br/><span class="grad-text">cada quien en lo suyo.</span></h2>
       <p class="lead" data-reveal data-reveal-delay="2">Alcon Ops es <b>multi-usuario, multi-sede y multi-empresa</b>. Cada persona ve y hace exactamente lo que su rol necesita —ni más, ni menos— y todos trabajan sobre la misma información en tiempo real.</p>
       <ul class="team-points" data-reveal data-reveal-delay="3">
-        <li><span>👥</span> Usuarios ilimitados por empresa, organizados por rol</li>
-        <li><span>🏬</span> Varias sedes con datos filtrados automáticamente</li>
-        <li><span>🔐</span> Permisos por rol: cada quien ve solo su parte</li>
-        <li><span>🔗</span> Alta de usuarios por link de invitación</li>
+        <li><span><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.users}></svg></span> Usuarios ilimitados por empresa, organizados por rol</li>
+        <li><span><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.store}></svg></span> Varias sedes con datos filtrados automáticamente</li>
+        <li><span><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.shield}></svg></span> Permisos por rol: cada quien ve solo su parte</li>
+        <li><span><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.link}></svg></span> Alta de usuarios por link de invitación</li>
       </ul>
     </div>
     <div class="team-roles">
@@ -245,12 +260,12 @@ const solves = [
     <div class="easy-card big" data-reveal>
       <h3>Tan fácil que se aprende usándolo</h3>
       <p>Pensado para gente de obra y oficina, no para informáticos. Botones claros, flujos guiados y el estado de cada equipo a la vista. Si sabes pedir un alquiler, ya sabes usar Alcon Ops.</p>
-      <div class="easy-chips"><span>🖱️ Un clic por acción</span><span>📱 Desde el celular</span><span>🌗 Modo claro/oscuro</span><span>⚡ Sin instalar nada</span></div>
+      <div class="easy-chips"><span><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.cursor}></svg>Un clic por acción</span><span><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.phone}></svg>Desde el celular</span><span><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.theme}></svg>Modo claro/oscuro</span><span><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.bolt}></svg>Sin instalar nada</span></div>
     </div>
-    <div class="easy-card" data-reveal data-reveal-delay="1"><div class="ec-ic">☁️</div><h4>100% en la nube</h4><p>Trabaja siempre en línea. Tus datos seguros y sincronizados al instante entre sedes.</p></div>
-    <div class="easy-card" data-reveal data-reveal-delay="2"><div class="ec-ic">📲</div><h4>Funciona como app (PWA)</h4><p>Instálala en el celular del operador. Cámara, firma y checklist desde la obra.</p></div>
-    <div class="easy-card" data-reveal data-reveal-delay="2"><div class="ec-ic">🔔</div><h4>Te avisa antes</h4><p>Alertas inteligentes de vencimientos, desgaste y devoluciones para adelantarte a los problemas.</p></div>
-    <div class="easy-card" data-reveal data-reveal-delay="3"><div class="ec-ic">🧾</div><h4>Documentos de marca</h4><p>Cotizaciones, alquileres y hojas de vida en PDF con las condiciones de tu empresa.</p></div>
+    <div class="easy-card" data-reveal data-reveal-delay="1"><div class="ec-ic"><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.cloud}></svg></div><h4>100% en la nube</h4><p>Trabaja siempre en línea. Tus datos seguros y sincronizados al instante entre sedes.</p></div>
+    <div class="easy-card" data-reveal data-reveal-delay="2"><div class="ec-ic"><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.phone}></svg></div><h4>Funciona como app (PWA)</h4><p>Instálala en el celular del operador. Cámara, firma y checklist desde la obra.</p></div>
+    <div class="easy-card" data-reveal data-reveal-delay="2"><div class="ec-ic"><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.bell}></svg></div><h4>Te avisa antes</h4><p>Alertas inteligentes de vencimientos, desgaste y devoluciones para adelantarte a los problemas.</p></div>
+    <div class="easy-card" data-reveal data-reveal-delay="3"><div class="ec-ic"><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic.receipt}></svg></div><h4>Documentos de marca</h4><p>Cotizaciones, alquileres y hojas de vida en PDF con las condiciones de tu empresa.</p></div>
   </div>
 </section>
 
@@ -358,6 +373,8 @@ const solves = [
 .trust-in{text-align:center}
 .trust-in p{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt-3);margin-bottom:16px}
 .trust-row{display:flex;gap:34px;justify-content:center;flex-wrap:wrap;font-weight:600;color:var(--txt-2);font-size:15px}
+.trust-row span{display:inline-flex;align-items:center;gap:8px}
+.trust-row span svg{width:19px;height:19px}
 
 /* ---------- SEC HEAD ---------- */
 .sec-head{max-width:760px;margin-bottom:54px}
@@ -396,7 +413,8 @@ const solves = [
 .team-in{display:grid;grid-template-columns:1fr .9fr;gap:54px;align-items:center}
 .team-points{list-style:none;display:flex;flex-direction:column;gap:13px;margin-top:26px}
 .team-points li{display:flex;gap:12px;align-items:center;font-size:15px;color:var(--txt)}
-.team-points li span{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid var(--line);display:grid;place-items:center;flex-shrink:0}
+.team-points li span{width:34px;height:34px;border-radius:10px;background:linear-gradient(160deg,#283142,#141a26);border:1px solid rgba(255,255,255,.10);box-shadow:inset 0 1px 0 rgba(255,255,255,.12);display:grid;place-items:center;flex-shrink:0}
+.team-points li span svg{width:18px;height:18px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
 .team-roles{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .role{display:flex;gap:13px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;transition:.3s}
 .role:hover{transform:translateY(-4px);border-color:var(--line-2);box-shadow:var(--shadow)}
@@ -415,8 +433,10 @@ const solves = [
 .easy-card.big h3{font-size:26px;color:#fff;margin-bottom:12px}
 .easy-card.big p{color:var(--txt-2);font-size:15px;line-height:1.6}
 .easy-chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}
-.easy-chips span{font-size:12.5px;font-weight:600;background:rgba(255,255,255,.05);border:1px solid var(--line);padding:8px 14px;border-radius:999px;color:var(--txt)}
-.ec-ic{font-size:28px;margin-bottom:12px}
+.easy-chips span{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;background:rgba(255,255,255,.05);border:1px solid var(--line);padding:8px 14px;border-radius:999px;color:var(--txt)}
+.easy-chips span svg{width:15px;height:15px;flex-shrink:0}
+.ec-ic{width:48px;height:48px;border-radius:13px;display:grid;place-items:center;margin-bottom:14px;background:linear-gradient(160deg,#283142,#141a26);border:1px solid rgba(255,255,255,.10);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 5px 13px rgba(0,0,0,.35)}
+.ec-ic svg{width:26px;height:26px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.55))}
 .easy-card h4{font-size:16px;color:#fff;margin-bottom:7px}
 .easy-card p{font-size:13px;color:var(--txt-2);line-height:1.5}
 @media (max-width:900px){.easy-grid{grid-template-columns:repeat(2,1fr)}.easy-card.big{grid-column:span 2;grid-row:auto}}
