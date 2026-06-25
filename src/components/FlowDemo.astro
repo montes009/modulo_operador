@@ -3,62 +3,78 @@
 // dentro de Alcon Ops. Clickeable + autoplay. Sin dependencias.
 const steps = [
   {
-    id: 'cotizacion', n: '01', role: 'Comercial', icon: '📝',
+    id: 'cotizacion', n: '01', role: 'Comercial', icon: 'doc',
     state: 'disponible', stateLabel: 'Disponible', tone: 'green',
     title: 'Se cotiza al cliente',
     desc: 'El equipo está en bodega, alistado por Taller. Comercial arma la cotización en segundos y la envía como PDF con las condiciones de la empresa.',
     ui: 'cot',
   },
   {
-    id: 'reserva', n: '02', role: 'Comercial', icon: '🔒',
+    id: 'reserva', n: '02', role: 'Comercial', icon: 'lock',
     state: 'reservado', stateLabel: 'Reservado', tone: 'blue',
     title: 'Se incluye en un alquiler → queda reservado',
     desc: 'Al sumar el equipo al alquiler, la máquina pasa a RESERVADO al instante. Nadie más puede tomarla: cero doble-reserva.',
     ui: 'alq',
   },
   {
-    id: 'go', n: '03', role: 'Comercial', icon: '🚀',
+    id: 'go', n: '03', role: 'Comercial', icon: 'rocket',
     state: 'reservado', stateLabel: 'Reservado', tone: 'blue',
     title: 'GO: se activa el alquiler',
     desc: 'El “GO” confirma el alquiler y genera la orden de salida automáticamente para Logística. El equipo sigue reservado hasta el despacho.',
     ui: 'go',
   },
   {
-    id: 'despacho', n: '04', role: 'Logística', icon: '🚚',
+    id: 'despacho', n: '04', role: 'Logística', icon: 'truck',
     state: 'trabajando', stateLabel: 'Trabajando', tone: 'amber',
     title: 'Logística despacha (RS)',
     desc: 'Coordinador asigna transportador y despacha. La máquina pasa a TRABAJANDO. Toda la ruta queda trazada en logística.',
     ui: 'log',
   },
   {
-    id: 'obra', n: '05', role: 'Operador en obra', icon: '📍',
+    id: 'obra', n: '05', role: 'Operador en obra', icon: 'pin',
     state: 'trabajando', stateLabel: 'En obra', tone: 'amber',
     title: 'Trazabilidad y mantenimiento en sitio',
     desc: 'El operador registra llegada, fotos, checklist y firma del receptor. Si toca preventivo, se genera una Orden de Servicio en obra (OS-####).',
     ui: 'obra',
   },
   {
-    id: 'devolucion', n: '06', role: 'Comercial / Logística', icon: '↩️',
+    id: 'devolucion', n: '06', role: 'Comercial / Logística', icon: 'undo',
     state: 'devolucion', stateLabel: 'En devolución', tone: 'purple',
     title: 'Se solicita la devolución',
     desc: 'Con un clic se emite la orden de recogida (RE). El alquiler queda pendiente de recogida y se facturan los días reales o por cortes.',
     ui: 'dev',
   },
   {
-    id: 'taller', n: '07', role: 'Taller', icon: '🔧',
+    id: 'taller', n: '07', role: 'Taller', icon: 'wrench',
     state: 'alistamiento', stateLabel: 'Alistamiento', tone: 'red',
     title: 'Regresa a Taller: checklist',
     desc: 'La RE devuelve el equipo a Taller. Se corre el checklist de seguridad obligatorio (parada de emergencia, controles, batería) antes de volver a la calle.',
     ui: 'taller',
   },
   {
-    id: 'listo', n: '08', role: 'Taller', icon: '✅',
+    id: 'listo', n: '08', role: 'Taller', icon: 'check',
     state: 'disponible', stateLabel: 'Disponible', tone: 'green',
     title: 'Disponible otra vez',
     desc: 'Checklist aprobado: el equipo vuelve a DISPONIBLE, listo para el siguiente alquiler. El ciclo se cierra sin papeles ni vacíos.',
     ui: 'cot',
   },
 ];
+
+// Íconos de línea de la demo (mismo trazo que el resto del sitio).
+const dic = {
+  doc:       '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
+  lock:      '<rect x="4.5" y="10.5" width="15" height="9.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>',
+  rocket:    '<path d="M5 15c-1.5 1-2 5-2 5s4-.5 5-2M9.5 11.5a8 8 0 0 1 7.5-8.5c2 0 3 1 3 3a8 8 0 0 1-8.5 7.5l-2.5.5L9 14l.5-2.5Z"/><circle cx="14.5" cy="9.5" r="1.4"/>',
+  truck:     '<path d="M3 16V6a1 1 0 0 1 1-1h10v11M14 9h4l3 3v4h-3M6 19a1.6 1.6 0 1 0 0-3.2A1.6 1.6 0 0 0 6 19ZM17 19a1.6 1.6 0 1 0 0-3.2A1.6 1.6 0 0 0 17 19Z"/>',
+  pin:       '<path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/>',
+  undo:      '<path d="M9 14l-4-4 4-4M5 10h9a5 5 0 0 1 0 10h-3"/>',
+  wrench:    '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-5.6 5.6a2 2 0 0 0 2.8 2.8l5.6-5.6a4 4 0 0 0 5.4-5.4l-2.6 2.6-1.8-.4-.4-1.8 2.6-2.6Z"/>',
+  check:     '<path d="M20 6L9 17l-5-5"/>',
+  send:      '<path d="M21 3L3 10.5l7 2.5 2.5 7L21 3Z"/><path d="M10 13L21 3"/>',
+  clipboard: '<rect x="6" y="4.5" width="12" height="16" rx="2"/><rect x="9" y="3" width="6" height="3" rx="1"/><path d="M9 12l2 2 4-4"/>',
+  pen:       '<path d="M4 20l4-1L19 8a2 2 0 0 0-3-3L5 16l-1 4Z"/><path d="M14.5 6.5l3 3"/>',
+  camera:    '<path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.2"/>',
+};
 ---
 
 <div class="demo" id="flowDemo">
@@ -66,7 +82,7 @@ const steps = [
     <!-- chrome de ventana -->
     <div class="demo-bar">
       <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-      <div class="demo-url"><span class="lock">🔒</span> app.alconops.com<span class="caret">|</span></div>
+      <div class="demo-url"><span class="lock"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={dic.lock}></svg></span> app.alconops.com<span class="caret">|</span></div>
       <div class="demo-live"><span class="pulse"></span> EN VIVO</div>
     </div>
 
@@ -77,7 +93,7 @@ const steps = [
           <button class={"step" + (i === 0 ? ' active' : '')} data-i={i} role="tab" aria-selected={i===0}>
             <span class="step-n">{s.n}</span>
             <span class="step-tx">
-              <span class="step-role">{s.icon} {s.role}</span>
+              <span class="step-role"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px" set:html={dic[s.icon]}></svg>{s.role}</span>
               <span class="step-title">{s.title}</span>
             </span>
           </button>
@@ -94,7 +110,7 @@ const steps = [
             </div>
             <div class="mc-pill" id="mcPill">Disponible</div>
           </div>
-          <div class="role-badge" id="roleBadge">📝 Comercial</div>
+          <div class="role-badge" id="roleBadge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px" set:html={dic.doc}></svg>Comercial</div>
         </div>
 
         <div class="screen-stage" id="screenStage"><!-- UI inyectada por JS --></div>
@@ -117,7 +133,7 @@ const steps = [
   </div>
 </div>
 
-<script is:inline define:vars={{ steps }}>
+<script is:inline define:vars={{ steps, dic }}>
 (function(){
   const root = document.getElementById('flowDemo');
   if(!root) return;
@@ -131,6 +147,12 @@ const steps = [
   const bar = root.querySelector('#progressBar');
   const btnPlay = root.querySelector('#btnPlay');
 
+  // ícono plata para el badge de rol (sobre fondo oscuro)
+  const sil = (n) => `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px">${dic[n]}</svg>`;
+  // ícono que hereda el color del texto (para las pantallas internas)
+  const di = (n,s=16) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px">${dic[n]}</svg>`;
+  const dic_c = (n,s=20) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${dic[n]}</svg>`;
+
   const toneColor = {
     green:['#1FB873','rgba(31,184,115,.14)'], blue:['#3B82F6','rgba(59,130,246,.16)'],
     amber:['#F0A317','rgba(240,163,23,.16)'], purple:['#8B5CF6','rgba(139,92,246,.16)'],
@@ -140,13 +162,13 @@ const steps = [
   function ui(kind){
     const row = (a,b,t='') => `<div class="ui-row"><span>${a}</span><b class="${t}">${b}</b></div>`;
     switch(kind){
-      case 'cot': return `<div class="ui-doc"><div class="ui-doc-h">COTIZACIÓN · COT-0241</div>${row('Cliente','Constructora del Río')}${row('Equipo','UP-704 · Plataforma 16m')}${row('Tarifa / día','$ 420.000')}${row('Total estimado','$ 6.300.000','hl')}<div class="ui-cta">📄 Enviar PDF</div></div>`;
-      case 'alq': return `<div class="ui-doc"><div class="ui-doc-h">ALQUILER · ALQ-0188</div>${row('Equipo asignado','UP-704 ✓')}${row('Duración','15 días')}${row('Inicio','Lun 29')}<div class="ui-flag blue">🔒 Equipo reservado — bloqueado para otros</div></div>`;
-      case 'go':  return `<div class="ui-doc"><div class="ui-doc-h">CONFIRMAR ALQUILER</div>${row('Estado','Borrador → Activo')}${row('Orden de salida','Generada automáticamente')}<div class="ui-cta go">🚀 GO</div></div>`;
-      case 'log': return `<div class="ui-doc"><div class="ui-doc-h">ORDEN LOGÍSTICA · RS-0188</div>${row('Movimiento','🚀 Entrega / despacho')}${row('Transportador','Transportes Andina')}${row('Destino','Obra Norte · Km 12')}<div class="ui-flag amber">🚚 Equipo en ruta → Trabajando</div></div>`;
-      case 'obra':return `<div class="ui-doc"><div class="ui-doc-h">OPERADOR · TRAZABILIDAD</div>${row('Llegada a obra','08:42 ✓')}${row('Checklist','7/7 ✓')}${row('Firma receptor','✍️ registrada')}<div class="ui-photos"><span>📷</span><span>📷</span><span>📷</span><span class="more">+4</span></div></div>`;
-      case 'dev': return `<div class="ui-doc"><div class="ui-doc-h">DEVOLUCIÓN · RE-0188</div>${row('Días reales','15')}${row('Facturación','Por cortes ✓')}${row('Recogida','Programada')}<div class="ui-flag purple">↩️ Pendiente de recogida</div></div>`;
-      case 'taller':return `<div class="ui-doc"><div class="ui-doc-h">CHECKLIST DE ALISTAMIENTO</div>${row('Parada emergencia','✓ OK','ok')}${row('Controles plataforma','✓ OK','ok')}${row('Voltaje batería','✓ OK','ok')}${row('Mecánico','J. Pérez')}<div class="ui-cta">📋 Aprobar</div></div>`;
+      case 'cot': return `<div class="ui-doc"><div class="ui-doc-h">COTIZACIÓN · COT-0241</div>${row('Cliente','Constructora del Río')}${row('Equipo','UP-704 · Plataforma 16m')}${row('Tarifa / día','$ 420.000')}${row('Total estimado','$ 6.300.000','hl')}<div class="ui-cta">${di('send')}Enviar PDF</div></div>`;
+      case 'alq': return `<div class="ui-doc"><div class="ui-doc-h">ALQUILER · ALQ-0188</div>${row('Equipo asignado','UP-704 ✓')}${row('Duración','15 días')}${row('Inicio','Lun 29')}<div class="ui-flag blue">${di('lock')}Equipo reservado — bloqueado para otros</div></div>`;
+      case 'go':  return `<div class="ui-doc"><div class="ui-doc-h">CONFIRMAR ALQUILER</div>${row('Estado','Borrador → Activo')}${row('Orden de salida','Generada automáticamente')}<div class="ui-cta go">${di('rocket')}GO</div></div>`;
+      case 'log': return `<div class="ui-doc"><div class="ui-doc-h">ORDEN LOGÍSTICA · RS-0188</div>${row('Movimiento',`${di('rocket',15)}Entrega / despacho`)}${row('Transportador','Transportes Andina')}${row('Destino','Obra Norte · Km 12')}<div class="ui-flag amber">${di('truck')}Equipo en ruta → Trabajando</div></div>`;
+      case 'obra':return `<div class="ui-doc"><div class="ui-doc-h">OPERADOR · TRAZABILIDAD</div>${row('Llegada a obra','08:42 ✓')}${row('Checklist','7/7 ✓')}${row('Firma receptor',`${di('pen',15)}registrada`)}<div class="ui-photos"><span>${dic_c('camera')}</span><span>${dic_c('camera')}</span><span>${dic_c('camera')}</span><span class="more">+4</span></div></div>`;
+      case 'dev': return `<div class="ui-doc"><div class="ui-doc-h">DEVOLUCIÓN · RE-0188</div>${row('Días reales','15')}${row('Facturación','Por cortes ✓')}${row('Recogida','Programada')}<div class="ui-flag purple">${di('undo')}Pendiente de recogida</div></div>`;
+      case 'taller':return `<div class="ui-doc"><div class="ui-doc-h">CHECKLIST DE ALISTAMIENTO</div>${row('Parada emergencia','✓ OK','ok')}${row('Controles plataforma','✓ OK','ok')}${row('Voltaje batería','✓ OK','ok')}${row('Mecánico','J. Pérez')}<div class="ui-cta">${di('clipboard')}Aprobar</div></div>`;
       default: return '';
     }
   }
@@ -168,7 +190,7 @@ const steps = [
     card.style.setProperty('--glow', bg);
     card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
 
-    roleBadge.textContent = `${s.icon} ${s.role}`;
+    roleBadge.innerHTML = `${sil(s.icon)}${s.role}`;
     titleEl.textContent = s.title;
     descEl.textContent = s.desc;
 
