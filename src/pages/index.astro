@@ -2,24 +2,39 @@
 import '../styles/global.css';
 import FlowDemo from '../components/FlowDemo.astro';
 
+// Íconos SVG monocromáticos (línea) — se pintan con el degradado plata #silver.
+const ic = {
+  fleet:     '<path d="M3 16V6a1 1 0 0 1 1-1h10v11M14 9h4l3 3v4h-3M6 19a1.6 1.6 0 1 0 0-3.2A1.6 1.6 0 0 0 6 19ZM17 19a1.6 1.6 0 1 0 0-3.2A1.6 1.6 0 0 0 17 19Z"/>',
+  doc:       '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+  truck:     '<path d="M3 16V6a1 1 0 0 1 1-1h10v11M14 9h4l3 3v4h-3M6 19a1.6 1.6 0 1 0 0-3.2A1.6 1.6 0 0 0 6 19ZM17 19a1.6 1.6 0 1 0 0-3.2A1.6 1.6 0 0 0 17 19Z"/>',
+  wrench:    '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-5.6 5.6a2 2 0 0 0 2.8 2.8l5.6-5.6a4 4 0 0 0 5.4-5.4l-2.6 2.6-1.8-.4-.4-1.8 2.6-2.6Z"/>',
+  gear:      '<path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 0 0-1.7-1L14.6 3h-4l-.3 2.6a7 7 0 0 0-1.7 1l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 1.7 1l.3 2.6h4l.3-2.6a7 7 0 0 0 1.7-1l2.3 1 2-3.4-2-1.5a7 7 0 0 0 .1-1Z"/>',
+  wallet:    '<path d="M3 7a2 2 0 0 1 2-2h12v3M3 7v10a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-3M3 7h16a1 1 0 0 1 1 1v3h-5a2 2 0 1 0 0 4h5"/>',
+  chart:     '<path d="M5 20V11M12 20V4M19 20v-6M3 20h18"/>',
+  pin:       '<path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"/><path d="M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>',
+  crown:     '<path d="M3 8l4.5 4.5L12 5l4.5 7.5L21 8l-1.6 10.5H4.6L3 8Z"/><path d="M4.6 18.5h14.8"/>',
+  building:  '<path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 10h4a1 1 0 0 1 1 1v10M3 21h18M8 8h3M8 12h3M8 16h3"/>',
+  briefcase: '<path d="M4 8h16a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1Z"/><path d="M9 8V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>',
+};
+
 const features = [
-  { icon:'🚜', tag:'Flota', title:'Control total de equipos', desc:'Cada máquina con su estado real en vivo: disponible, reservado, trabajando, en taller o varada. Hoja de vida, horómetro y medidores.', color:'var(--navy-400)' },
-  { icon:'📄', tag:'Alquileres', title:'Cotizar y alquilar en minutos', desc:'De cotización a alquiler activo con PDFs de marca, condiciones por empresa y facturación por días reales o cortes.', color:'var(--cyan)' },
-  { icon:'🚚', tag:'Logística', title:'Despachos y devoluciones trazados', desc:'Órdenes de entrega, recogida y traslado con transportador, ruta y estado. Sin equipos “perdidos” entre obras.', color:'var(--yellow)' },
-  { icon:'🔧', tag:'Taller', title:'Alistamiento con checklist obligatorio', desc:'Nada sale a la calle sin pasar el checklist de seguridad. Vencimientos, mecánico y aprobación en un paso.', color:'var(--red)' },
-  { icon:'🏗️', tag:'Mantenimiento', title:'Órdenes de Servicio en obra', desc:'Preventivos automáticos por tiempo u horómetro para equipos de largo plazo, con técnico, evidencia y firma en sitio.', color:'var(--green)' },
-  { icon:'💵', tag:'Caja & Cartera', title:'Movimientos y clientes al día', desc:'Caja, cartera de clientes y documentos centralizados. Sabes quién debe, cuánto y desde cuándo.', color:'var(--green)' },
-  { icon:'📊', tag:'Gerencia', title:'Panel gerencial + alertas LIAN', desc:'KPIs, rentabilidad por equipo y un motor de alertas inteligentes que avisa vencimientos, desgaste y riesgos antes de que duelan.', color:'var(--purple)' },
-  { icon:'📍', tag:'Operador', title:'Trazabilidad desde la obra', desc:'El operador registra llegada, fotos, checklist y firma del receptor desde el celular. Garantía y respaldo de cada entrega.', color:'var(--navy-300)' },
+  { key:'fleet',  tag:'Flota', title:'Control total de equipos', desc:'Cada máquina con su estado real en vivo: disponible, reservado, trabajando, en taller o varada. Hoja de vida, horómetro y medidores.', color:'var(--navy-400)' },
+  { key:'doc',    tag:'Alquileres', title:'Cotizar y alquilar en minutos', desc:'De cotización a alquiler activo con PDFs de marca, condiciones por empresa y facturación por días reales o cortes.', color:'var(--cyan)' },
+  { key:'truck',  tag:'Logística', title:'Despachos y devoluciones trazados', desc:'Órdenes de entrega, recogida y traslado con transportador, ruta y estado. Sin equipos “perdidos” entre obras.', color:'var(--yellow)' },
+  { key:'wrench', tag:'Taller', title:'Alistamiento con checklist obligatorio', desc:'Nada sale a la calle sin pasar el checklist de seguridad. Vencimientos, mecánico y aprobación en un paso.', color:'var(--red)' },
+  { key:'gear',   tag:'Mantenimiento', title:'Órdenes de Servicio en obra', desc:'Preventivos automáticos por tiempo u horómetro para equipos de largo plazo, con técnico, evidencia y firma en sitio.', color:'var(--green)' },
+  { key:'wallet', tag:'Caja & Cartera', title:'Movimientos y clientes al día', desc:'Caja, cartera de clientes y documentos centralizados. Sabes quién debe, cuánto y desde cuándo.', color:'var(--green)' },
+  { key:'chart',  tag:'Gerencia', title:'Panel gerencial + alertas LIAN', desc:'KPIs, rentabilidad por equipo y un motor de alertas inteligentes que avisa vencimientos, desgaste y riesgos antes de que duelan.', color:'var(--purple)' },
+  { key:'pin',    tag:'Operador', title:'Trazabilidad desde la obra', desc:'El operador registra llegada, fotos, checklist y firma del receptor desde el celular. Garantía y respaldo de cada entrega.', color:'var(--navy-300)' },
 ];
 
 const roles = [
-  { icon:'👑', name:'Superadmin', desc:'Gobierna todas las empresas y sedes' },
-  { icon:'🏢', name:'Admin empresa', desc:'Configura su empresa, usuarios y condiciones' },
-  { icon:'💼', name:'Comercial', desc:'Cotiza, alquila y gestiona clientes' },
-  { icon:'🔧', name:'Taller', desc:'Alista, repara y aprueba equipos' },
-  { icon:'🚚', name:'Logística', desc:'Despacha, recoge y traslada' },
-  { icon:'📍', name:'Operador', desc:'Trazabilidad y firma en obra' },
+  { key:'crown',     name:'Superadmin', desc:'Gobierna todas las empresas y sedes' },
+  { key:'building',  name:'Admin empresa', desc:'Configura su empresa, usuarios y condiciones' },
+  { key:'briefcase', name:'Comercial', desc:'Cotiza, alquila y gestiona clientes' },
+  { key:'wrench',    name:'Taller', desc:'Alista, repara y aprueba equipos' },
+  { key:'truck',     name:'Logística', desc:'Despacha, recoge y traslada' },
+  { key:'pin',       name:'Operador', desc:'Trazabilidad y firma en obra' },
 ];
 
 const solves = [
@@ -45,6 +60,18 @@ const solves = [
   <noscript><style>[data-reveal]{opacity:1!important;transform:none!important}</style></noscript>
 </head>
 <body>
+
+<!-- degradado plata/metálico reutilizable para todos los íconos SVG -->
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <defs>
+    <linearGradient id="silver" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6f8fb"/>
+      <stop offset="0.45" stop-color="#cdd4e0"/>
+      <stop offset="0.55" stop-color="#aab2c2"/>
+      <stop offset="1" stop-color="#7c8597"/>
+    </linearGradient>
+  </defs>
+</svg>
 
 <!-- ===================== NAV ===================== -->
 <header class="nav" id="nav">
@@ -164,7 +191,7 @@ const solves = [
     <div class="feat-grid">
       {features.map((f,i)=>(
         <article class="feat" data-reveal data-reveal-delay={(i%4)+1} style={`--accent:${f.color}`}>
-          <div class="feat-icon">{f.icon}</div>
+          <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic[f.key]}></svg></div>
           <span class="feat-tag">{f.tag}</span>
           <h3>{f.title}</h3>
           <p>{f.desc}</p>
@@ -204,7 +231,7 @@ const solves = [
     <div class="team-roles">
       {roles.map((r,i)=>(
         <div class="role" data-reveal data-reveal-delay={(i%3)+1}>
-          <span class="role-ic">{r.icon}</span>
+          <span class="role-ic"><svg viewBox="0 0 24 24" fill="none" stroke="url(#silver)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={ic[r.key]}></svg></span>
           <div><b>{r.name}</b><small>{r.desc}</small></div>
         </div>
       ))}
@@ -352,7 +379,8 @@ const solves = [
 .feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
 .feat{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:26px 22px;overflow:hidden;transition:.35s cubic-bezier(.2,.8,.2,1)}
 .feat:hover{transform:translateY(-6px);border-color:color-mix(in srgb,var(--accent) 50%,transparent)}
-.feat-icon{font-size:30px;width:56px;height:56px;border-radius:15px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 16%,transparent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);margin-bottom:16px}
+.feat-icon{width:56px;height:56px;border-radius:15px;display:grid;place-items:center;margin-bottom:16px;background:linear-gradient(160deg,#283142,#141a26);border:1px solid rgba(255,255,255,.10);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 6px 16px rgba(0,0,0,.38)}
+.feat-icon svg{width:28px;height:28px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.55))}
 .feat-tag{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
 .feat h3{font-size:18px;color:#fff;margin:7px 0 9px;line-height:1.25}
 .feat p{font-size:13.5px;color:var(--txt-2);line-height:1.55}
@@ -372,7 +400,8 @@ const solves = [
 .team-roles{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .role{display:flex;gap:13px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;transition:.3s}
 .role:hover{transform:translateY(-4px);border-color:var(--line-2);box-shadow:var(--shadow)}
-.role-ic{font-size:24px;width:46px;height:46px;border-radius:12px;background:var(--grad-navy);border:1px solid var(--line-2);display:grid;place-items:center;flex-shrink:0}
+.role-ic{width:46px;height:46px;border-radius:12px;background:linear-gradient(160deg,#283142,#141a26);border:1px solid rgba(255,255,255,.10);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 5px 13px rgba(0,0,0,.38);display:grid;place-items:center;flex-shrink:0}
+.role-ic svg{width:24px;height:24px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.55))}
 .role b{display:block;font-size:14.5px;color:#fff;font-family:var(--font-display)}
 .role small{font-size:12px;color:var(--txt-3)}
 @media (max-width:920px){.team-in{grid-template-columns:1fr;gap:40px}}
